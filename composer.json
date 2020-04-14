@@ -1,0 +1,33 @@
+{
+  "name": "andrew-svirin/zoom-php",
+  "type": "library",
+  "description": "PHP client library for interacting with the Zoom API",
+  "keywords": [
+    "zoom",
+    "php",
+    "sdk"
+  ],
+  "license": "MIT",
+  "require": {
+    "php": ">=7.2.1",
+    "guzzlehttp/guzzle": "^6.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~6.0"
+  },
+  "authors": [
+    {
+      "name": "Andrew Svirin"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "AndrewSvirin\\Zoom\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "AndrewSvirin\\Zoom\\Tests\\": "tests"
+    }
+  }
+}
