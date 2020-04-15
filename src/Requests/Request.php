@@ -18,6 +18,12 @@ abstract class Request
     protected $method;
 
     /**
+     * URI where send request.
+     * @var string
+     */
+    protected $uri;
+
+    /**
      * Query parameters
      * @var array
      */
@@ -29,6 +35,11 @@ abstract class Request
      */
     protected $json;
 
+    /**
+     * @var string
+     */
+    protected $jwt;
+
     public function getMethod(): string
     {
         return $this->method;
@@ -39,8 +50,28 @@ abstract class Request
         return $this->parameters;
     }
 
+    public function hasJson(): bool
+    {
+        return !empty($this->json);
+    }
+
     public function getJson(): ?array
     {
         return $this->json;
+    }
+
+    public function getURI(): string
+    {
+        return $this->uri;
+    }
+
+    public function getJWT(): string
+    {
+        return $this->jwt;
+    }
+
+    public function setJWT(string $jwt): void
+    {
+        $this->jwt = $jwt;
     }
 }
