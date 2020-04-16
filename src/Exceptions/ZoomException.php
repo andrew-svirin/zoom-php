@@ -14,8 +14,18 @@ class ZoomException extends \Exception
     public function __construct($json)
     {
         if (is_array($json)) {
-            $message = $json['message'];
-            $code = $json['code'];
+            $message = isset($json['message']) ?
+                $json['message'] :
+                (isset($json['errorMessage']) ?
+                    $json['errorMessage'] :
+                    json_encode($json)
+                );
+            $code = isset($json['code']) ?
+                $json['code'] :
+                (isset($json['errorCode']) ?
+                    $json['errorCode'] :
+                    0
+                );
         } else {
             $message = $json;
             $code = 0;

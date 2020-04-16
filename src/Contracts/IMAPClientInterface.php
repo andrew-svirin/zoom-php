@@ -22,6 +22,7 @@ interface IMAPClientInterface
 
     /**
      * Search Emails having the specified filter.
+     * Ordering by newest first.
      * @param resource $connection
      * @param string $filter
      * @return array|false

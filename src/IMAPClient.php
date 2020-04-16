@@ -32,6 +32,9 @@ final class IMAPClient implements IMAPClientInterface
     public function messagesSearch($connection, $filter)
     {
         $messages = imap_search($connection, $filter);
+        if (is_array($messages)) {
+            rsort($messages);
+        }
         return $messages;
     }
 
