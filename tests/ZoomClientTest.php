@@ -4,6 +4,7 @@ namespace AndrewSvirin\Zoom\Tests;
 
 use AndrewSvirin\Zoom\Requests\Meeting\CreateMeeting;
 use AndrewSvirin\Zoom\Requests\Meeting\DeleteMeeting;
+use AndrewSvirin\Zoom\Requests\Meeting\LoadMeeting;
 use AndrewSvirin\Zoom\Requests\User\CreateUser;
 use AndrewSvirin\Zoom\Requests\User\DeleteUser;
 
@@ -23,10 +24,25 @@ class ZoomClientTest extends BaseTestCase
     /**
      * @group create-user
      */
-    public function testUser()
+    public function testCreateUser()
+    {
+        try {
+            $user = $this->createUser($this->getEmail(), false);
+            $this->assertArrayHasKey('id', $user);
+            $this->apiClient->call(new DeleteUser($user['id']));
+        } catch (\Exception $exception) {
+            $this->assertTrue(in_array($exception->getCode(), [1005, 1001]));
+        }
+    }
+
+    /**
+     * @group load-user
+     */
+    public function testLoadUser()
     {
         try {
             $user = $this->createUser();
+            $user = $this->apiClient->call(new \AndrewSvirin\Zoom\Requests\User\LoadUser($user['id']))->getJson();
             $this->assertArrayHasKey('id', $user);
             $this->apiClient->call(new DeleteUser($user['id']));
         } catch (\Exception $exception) {
@@ -72,6 +88,24 @@ class ZoomClientTest extends BaseTestCase
             $meeting = $this->apiClient->call(new CreateMeeting($user['id'], [
                 'topic' => 'Some Topic',
             ]))->getJson();
+            $this->assertArrayHasKey('id', $meeting);
+            $this->apiClient->call(new DeleteUser($user['id']));
+        } catch (\Exception $exception) {
+            $this->assertTrue(in_array($exception->getCode(), [1005, 1001, 124]));
+        }
+    }
+
+    /**
+     * @group load-meeting
+     */
+    public function testLoadMeeting()
+    {
+        try {
+            $user = $this->createUser();
+            $meeting = $this->apiClient->call(new CreateMeeting($user['id'], [
+                'topic' => 'Some Topic',
+            ]))->getJson();
+            $meeting = $this->apiClient->call(new LoadMeeting($meeting['id']))->getJson();
             $this->assertArrayHasKey('id', $meeting);
             $this->apiClient->call(new DeleteUser($user['id']));
         } catch (\Exception $exception) {
