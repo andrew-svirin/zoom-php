@@ -35,11 +35,6 @@ abstract class Request
      */
     protected $json;
 
-    /**
-     * @var string
-     */
-    protected $jwt;
-
     public function getMethod(): string
     {
         return $this->method;
@@ -63,15 +58,5 @@ abstract class Request
     public function getURI(): string
     {
         return $this->uri;
-    }
-
-    public function getJWT(): string
-    {
-        return $this->jwt;
-    }
-
-    public function setJWT(string $jwt): void
-    {
-        $this->jwt = $jwt;
     }
 }

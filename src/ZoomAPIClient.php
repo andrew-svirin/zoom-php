@@ -2,24 +2,27 @@
 
 namespace AndrewSvirin\Zoom;
 
-use AndrewSvirin\Zoom\Contracts\ZoomClientInterface;
+use AndrewSvirin\Zoom\Contracts\ZoomAPIClientInterface;
+use AndrewSvirin\Zoom\Exceptions\ZoomException;
 use AndrewSvirin\Zoom\Models\JsonResponse;
 use AndrewSvirin\Zoom\Requests\Request;
+use GuzzleHttp\Exception\ClientException;
 use Psr\Http\Message\ResponseInterface;
 
 /**
- * ZOOM client representation.
+ * ZOOM API client representation.
+ * Interact with Zoom through REST API.
  *
  * @license http://www.opensource.org/licenses/mit-license.html  MIT License
  * @author Andrew Svirin
  */
-final class ZoomClient implements ZoomClientInterface
+final class ZoomAPIClient implements ZoomAPIClientInterface
 {
 
     /**
      * @var \GuzzleHttp\Client
      */
-    protected $client;
+    protected $httpClient;
 
     /**
      * @var array [
@@ -32,23 +35,24 @@ final class ZoomClient implements ZoomClientInterface
      */
     protected $config;
 
-    public function __construct($client, $config)
+    public function __construct($httpClient, $config)
     {
-        $this->client = $client;
+        $this->httpClient = $httpClient;
         $this->config = $config;
     }
 
     /**
-     * Call prepared Requests from Zoom service.
-     * @param Request $request
-     * @return Models\JsonResponse|ResponseInterface
+     * @inheritDoc
+     * @throws Exceptions\ZoomException
      */
     public function call(Request $request)
     {
-        $request->setJWT($this->generateJWTKey());
         $url = $this->config['url'] . '/' . $request->getURI();
+        if (($query = http_build_query($request->getParameters()))) {
+            $url .= '?' . $query;
+        }
         $options = [
-            'http_errors' => false,
+            'http_errors' => true,
             'decode_content' => true,
             'verify' => false,
             'cookies' => false,
@@ -63,7 +67,7 @@ final class ZoomClient implements ZoomClientInterface
         }
         // Add Json handler
         /** @var \GuzzleHttp\HandlerStack $handler */
-        $handler = $this->client->getConfig('handler');
+        $handler = $this->httpClient->getConfig('handler');
         $handler->push(\GuzzleHttp\Middleware::mapResponse(
             function (ResponseInterface $response) use ($handler) {
                 $response = new JsonResponse(
@@ -77,7 +81,13 @@ final class ZoomClient implements ZoomClientInterface
                 return $response;
             }
         ), 'json_decode_chain_middleware');
-        return $this->client->request($request->getMethod(), $url, $options);
+        try {
+            $response = $this->httpClient->request($request->getMethod(), $url, $options);
+        } catch (ClientException $exception) {
+            $json = $exception->getResponse()->getJson();
+            throw new ZoomException($json);
+        }
+        return $response;
     }
 
     /**
@@ -105,7 +115,11 @@ final class ZoomClient implements ZoomClientInterface
         $base64UrlPayload = $this->base64UrlEncode($payload);
 
         // Create Signature Hash
-        $signature = hash_hmac('sha256', $base64UrlHeader . '.' . $base64UrlPayload, $this->config['jwt']['api_secret'], true);
+        $signature = hash_hmac(
+            'sha256',
+            $base64UrlHeader . '.' . $base64UrlPayload, $this->config['jwt']['api_secret'],
+            true
+        );
 
         // Encode Signature to Base64Url String
         $base64UrlSignature = $this->base64UrlEncode($signature);

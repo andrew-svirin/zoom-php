@@ -21,17 +21,17 @@ class JsonResponse extends Response
 
     /**
      * Get json decoded data.
-     * @throws ZoomException
+     * @return array|string
      */
-    public function getJson(): array
+    public function getJson()
     {
         // Get parent Body stream.
         $body = $this->getBody();
 
         // If JSON HTTP header was not detected - then throw error.
-        if (false === strpos($this->getHeaderLine('Content-Type'), 'application/json')) {
-            throw new ZoomException('Incorrect header was specified');
+        if (false !== strpos($this->getHeaderLine('Content-Type'), 'application/json')) {
+            return json_decode($body, true);
         }
-        return json_decode($body, true);
+        return $body->getContents();
     }
 }

@@ -11,4 +11,15 @@ namespace AndrewSvirin\Zoom\Exceptions;
 class ZoomException extends \Exception
 {
 
+    public function __construct($json)
+    {
+        if (is_array($json)) {
+            $message = $json['message'];
+            $code = $json['code'];
+        } else {
+            $message = $json;
+            $code = 0;
+        }
+        parent::__construct($message, $code);
+    }
 }
